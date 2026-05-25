@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>りんのさんすうクイズ</title>
+  <link rel="stylesheet" href="style.css?v=15">
+</head>
+<body>
+  <main class="app">
+    <section class="quiz-panel" aria-live="polite">
+      <div class="top-bar">
+        <div class="badge">しょうがく1ねんせい</div>
+        <div class="sound-controls">
+          <button id="speechButton" class="sound-button" type="button" aria-pressed="false">よみあげ</button>
+          <button id="musicButton" class="sound-button" type="button" aria-pressed="false">♪ おんがく</button>
+        </div>
+      </div>
+      <h1>りんのさんすうクイズ</h1>
+      <p class="lead">こたえを 3つのボタンから えらんでね！</p>
+
+      <div class="score-board" aria-label="クイズの進み具合">
+        <div class="score-pill">
+          <span>もんだい</span>
+          <strong><span id="questionNumber">1</span>/10</strong>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+        <div class="score-pill">
+          <span>せいかい</span>
+          <strong><span id="correctCount">0</span>こ</strong>
+        </div>
+      </div>
+
+      <div class="question-card">
+        <div id="questionVisual" class="question-visual" aria-label="数字のまとまり"></div>
+        <div id="question" class="question">10 + 20 = ?</div>
+      </div>
+
+      <div id="choices" class="choices" aria-label="こたえの選択肢"></div>
+
+      <div id="result" class="result hidden">
+        <div class="answer-feedback">
+          <p id="message" class="message">ピンポーン！</p>
+          <div id="answerFormula" class="answer-formula" aria-label="たてしきの答え"></div>
+        </div>
+        <div id="character" class="character" aria-label="にこにこの可愛いキャラクター" role="img">
+          <div class="ear ear-left"></div>
+          <div class="ear ear-right"></div>
+          <div class="face">
+            <div class="eye eye-left"></div>
+            <div class="eye eye-right"></div>
+            <div class="cheek cheek-left"></div>
+            <div class="cheek cheek-right"></div>
+            <div class="mouth"></div>
+          </div>
+          <div class="body"></div>
+          <div class="arm arm-left"></div>
+          <div class="arm arm-right"></div>
+        </div>
+      </div>
+
+      <div id="finalScreen" class="final-screen hidden">
+        <p class="final-title">けっかはっぴょう！</p>
+        <p id="finalScore" class="final-score">10もんちゅう 10もん せいかい</p>
+        <p id="finalRate" class="final-rate">せいかいりつ 100%</p>
+        <p id="finalComment" class="final-comment">すごい！さんすうマスター！</p>
+      </div>
+
+      <button id="nextButton" class="next-button hidden" type="button">つぎのもんだい</button>
+    </section>
+  </main>
+
+  <script src="script.js?v=15"></script>
+</body>
+</html>
