@@ -561,7 +561,7 @@ h1 {
 
 @media (max-width: 560px) {
   .app {
-    padding: 14px;
+    padding: 14px 14px calc(96px + env(safe-area-inset-bottom));
   }
 
   .quiz-panel {
@@ -583,7 +583,8 @@ h1 {
   }
 
   .choices {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
 
   .score-board {
@@ -596,11 +597,34 @@ h1 {
   }
 
   .choice-button {
-    min-height: 64px;
+    min-height: 56px;
+    border-radius: 16px;
+    font-size: clamp(1.25rem, 7vw, 1.75rem);
   }
 
   .result {
     flex-direction: column;
     gap: 4px;
+    margin-bottom: 72px;
+  }
+
+  .next-button {
+    position: fixed;
+    left: 50%;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 20;
+    width: min(330px, calc(100vw - 28px));
+    min-height: 58px;
+    margin-top: 0;
+    transform: translateX(-50%);
+  }
+
+  .next-button:hover,
+  .next-button:focus-visible {
+    transform: translateX(-50%) translateY(-3px);
+  }
+
+  .next-button:active {
+    transform: translateX(-50%) translateY(4px);
   }
 }
