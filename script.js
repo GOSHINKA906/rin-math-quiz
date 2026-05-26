@@ -35,21 +35,57 @@ const melody = [
   523.25,
   659.25,
   783.99,
+  880,
+  783.99,
   659.25,
   587.33,
+  659.25,
   698.46,
   880,
+  987.77,
+  880,
+  783.99,
   698.46,
+  659.25,
+  523.25,
 ];
 
-function playTone(frequency, startTime, duration) {
+function getAudioApi() {
+  return window.AudioContext || window.webkitAudioContext;
+}
+
+async function ensureAudioContext() {
+  const AudioApi = getAudioApi();
+
+  if (!AudioApi) {
+    musicButton.textContent = "♪ おんがく なし";
+    musicButton.disabled = true;
+    return null;
+  }
+
+  if (!audioContext) {
+    audioContext = new AudioApi();
+  }
+
+  if (audioContext.state === "suspended") {
+    await audioContext.resume();
+  }
+
+  return audioContext;
+}
+
+function playTone(frequency, startTime, duration, volume = 0.04, type = "triangle") {
+  if (!audioContext) {
+    return;
+  }
+
   const oscillator = audioContext.createOscillator();
   const gain = audioContext.createGain();
 
-  oscillator.type = "triangle";
+  oscillator.type = type;
   oscillator.frequency.setValueAtTime(frequency, startTime);
   gain.gain.setValueAtTime(0.0001, startTime);
-  gain.gain.exponentialRampToValueAtTime(0.045, startTime + 0.03);
+  gain.gain.exponentialRampToValueAtTime(volume, startTime + 0.025);
   gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
 
   oscillator.connect(gain);
@@ -66,17 +102,16 @@ function playMelodyLoop() {
   const startTime = audioContext.currentTime + 0.04;
 
   melody.forEach((frequency, index) => {
-    playTone(frequency, startTime + (index * 0.28), 0.2);
+    const isBeat = index % 4 === 0;
+    playTone(frequency, startTime + (index * 0.18), 0.13, isBeat ? 0.038 : 0.03, "triangle");
   });
 }
 
 async function toggleMusic() {
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  }
+  const readyAudioContext = await ensureAudioContext();
 
-  if (audioContext.state === "suspended") {
-    await audioContext.resume();
+  if (!readyAudioContext) {
+    return;
   }
 
   isMusicPlaying = !isMusicPlaying;
@@ -85,12 +120,32 @@ async function toggleMusic() {
 
   if (isMusicPlaying) {
     playMelodyLoop();
-    musicTimer = setInterval(playMelodyLoop, 2240);
+    musicTimer = setInterval(playMelodyLoop, 2880);
     return;
   }
 
   clearInterval(musicTimer);
   musicTimer = null;
+}
+
+async function playAnswerSound(isCorrect) {
+  const readyAudioContext = await ensureAudioContext();
+
+  if (!readyAudioContext) {
+    return;
+  }
+
+  const startTime = audioContext.currentTime + 0.03;
+
+  if (isCorrect) {
+    [523.25, 659.25, 783.99, 1046.5].forEach((frequency, index) => {
+      playTone(frequency, startTime + (index * 0.09), 0.16, 0.07, "triangle");
+    });
+    return;
+  }
+
+  playTone(220, startTime, 0.18, 0.055, "sine");
+  playTone(174.61, startTime + 0.18, 0.22, 0.045, "sine");
 }
 
 function numberToJapanese(number) {
@@ -364,6 +419,7 @@ function checkAnswer(button, choice) {
 
   resultElement.classList.remove("hidden");
   renderVerticalFormula();
+  playAnswerSound(isCorrect).catch(() => {});
 
   if (isCorrect) {
     correctCount += 1;
