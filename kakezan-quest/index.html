@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#ff5b55" />
+    <title>りんの九九クエスト</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23ffd84d'/%3E%3Cpath d='M20 20l24 24M44 20L20 44' stroke='%2325324b' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand-mark" aria-hidden="true">×</div>
+      <div>
+        <p class="brand-kicker">10もんチャレンジ</p>
+        <h1>りんの九九クエスト</h1>
+      </div>
+      <button id="soundButton" class="icon-button" type="button" aria-pressed="true" aria-label="音を消す" title="音を消す">
+        <span aria-hidden="true">♪</span>
+      </button>
+    </header>
+
+    <main>
+      <section id="gameScreen" class="game-board" aria-label="かけ算クイズ">
+        <div class="top-controls">
+          <div class="mode-switch" aria-label="むずかしさ">
+            <button class="mode-button is-active" type="button" data-mode="easy">2〜5のだん</button>
+            <button class="mode-button" type="button" data-mode="all">1〜9のだん</button>
+          </div>
+          <div class="score-group" aria-label="ゲームのきろく">
+            <span class="score-chip"><b id="starCount">0</b><small>スター</small></span>
+            <span class="score-chip combo-chip"><b id="comboCount">0</b><small>れんぞく</small></span>
+          </div>
+        </div>
+
+        <ol id="questPath" class="quest-path" aria-label="10もんのすすみぐあい"></ol>
+
+        <div class="play-area">
+          <div class="mascot-wrap" aria-hidden="true">
+            <div id="mascot" class="mascot">
+              <div class="antenna"></div>
+              <div class="robot-face"><i></i><i></i><span></span></div>
+              <div class="robot-body">×</div>
+            </div>
+            <p id="mascotSpeech">いっしょに すすもう！</p>
+          </div>
+
+          <div class="question-area">
+            <p id="questionNumber" class="question-number">だい 1 もん</p>
+            <div id="question" class="question" aria-live="polite">3 × 4 = ?</div>
+            <div id="groupVisual" class="group-visual" aria-label="かけ算のまとまり"></div>
+            <p id="visualCaption" class="visual-caption"></p>
+          </div>
+        </div>
+
+        <div id="answers" class="answers" aria-label="こたえをえらぶ"></div>
+
+        <div id="feedback" class="feedback" aria-live="assertive">
+          <strong id="feedbackTitle"></strong>
+          <span id="feedbackFormula"></span>
+          <small id="feedbackHint"></small>
+        </div>
+      </section>
+
+      <section id="resultScreen" class="result-screen" hidden aria-live="polite">
+        <div class="result-mascot" aria-hidden="true">×</div>
+        <p class="result-label">10もんクリア！</p>
+        <h2 id="rankTitle">九九マスター</h2>
+        <p id="resultMessage" class="result-message"></p>
+        <div class="result-score">
+          <strong><span id="correctResult">0</span><small>/ 10もん</small></strong>
+          <span id="percentResult">0%</span>
+        </div>
+        <p id="bestComboResult" class="best-combo"></p>
+        <button id="retryButton" class="primary-button" type="button">もういちど ぼうけんする</button>
+      </section>
+    </main>
+
+    <div id="nextDock" class="next-dock" hidden>
+      <button id="nextButton" class="next-button" type="button">つぎの もんだいへ <span aria-hidden="true">→</span></button>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
