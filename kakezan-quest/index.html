@@ -3,17 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#ff5b55" />
-    <title>りんの九九クエスト</title>
+    <meta name="theme-color" content="#f8e9e9" />
+    <title>りんの九九ガーデン</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23ffd84d'/%3E%3Cpath d='M20 20l24 24M44 20L20 44' stroke='%2325324b' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <header class="app-header">
-      <div class="brand-mark" aria-hidden="true">×</div>
+      <div class="brand-mark" aria-hidden="true">✿</div>
       <div>
-        <p class="brand-kicker">10もんチャレンジ</p>
-        <h1>りんの九九クエスト</h1>
+        <p class="brand-kicker">あそんで、そだつ。りんの おにわ</p>
+        <h1>りんの九九ガーデン</h1>
       </div>
       <button id="soundButton" class="icon-button" type="button" aria-pressed="true" aria-label="音を消す" title="音を消す">
         <span aria-hidden="true">♪</span>
@@ -21,27 +21,25 @@
     </header>
 
     <main>
+      <div class="welcome"><span class="eyebrow">✿ ももと いっしょに ✿</span><h2>九九で おはなを さかせよう</h2><p>ひとつずつ、じぶんの ペースで だいじょうぶ。</p></div>
       <section id="gameScreen" class="game-board" aria-label="かけ算クイズ">
         <div class="top-controls">
           <div class="mode-switch" aria-label="むずかしさ">
-            <button class="mode-button is-active" type="button" data-mode="easy">2〜5のだん</button>
-            <button class="mode-button" type="button" data-mode="all">1〜9のだん</button>
+            <button class="mode-button is-active" type="button" data-mode="easy" aria-pressed="true">2〜5のだん</button>
+            <button class="mode-button" type="button" data-mode="all" aria-pressed="false">1〜9のだん</button>
           </div>
           <div class="score-group" aria-label="ゲームのきろく">
-            <span class="score-chip"><b id="starCount">0</b><small>スター</small></span>
-            <span class="score-chip combo-chip"><b id="comboCount">0</b><small>れんぞく</small></span>
+            <span class="score-chip"><span aria-hidden="true">★</span><b id="starCount">0</b><small>スター</small></span>
+            <span class="score-chip combo-chip"><span aria-hidden="true">♡</span><b id="comboCount">0</b><small>れんぞく</small></span>
           </div>
         </div>
 
-        <ol id="questPath" class="quest-path" aria-label="10もんのすすみぐあい"></ol>
+        <div class="path-label"><span>きょうの おはな</span><span>10もんで ゴール ⚑</span></div><ol id="questPath" class="quest-path" aria-label="10もんのすすみぐあい"></ol>
 
         <div class="play-area">
-          <div class="mascot-wrap" aria-hidden="true">
-            <div id="mascot" class="mascot">
-              <div class="antenna"></div>
-              <div class="robot-face"><i></i><i></i><span></span></div>
-              <div class="robot-body">×</div>
-            </div>
+          <div class="mascot-wrap">
+            <div id="mascot" class="mascot"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 310"><ellipse cx="150" cy="285" rx="105" ry="12" fill="#e9dfcf"/><g stroke="#775548" stroke-width="4" stroke-linejoin="round"><path d="M94 124C52 10 110-9 125 113M170 112C181-8 239 13 207 132" fill="#fffaf0"/><path d="M100 95C85 37 106 29 111 93M189 93C202 32 216 40 201 101" stroke="#efbac3" stroke-width="13" stroke-linecap="round"/><ellipse cx="151" cy="235" rx="62" ry="53" fill="#f4b8c8"/><ellipse cx="102" cy="275" rx="28" ry="15" fill="#fffaf0"/><ellipse cx="193" cy="275" rx="28" ry="15" fill="#fffaf0"/><path d="M98 213Q63 210 77 243Q85 251 107 238M206 212Q237 210 226 239Q215 251 198 235" fill="#fffaf0"/><path d="M70 156C65 88 230 80 234 153C253 225 62 237 70 156Z" fill="#fffaf0"/></g><ellipse cx="101" cy="175" rx="17" ry="10" fill="#f3bfca"/><ellipse cx="202" cy="175" rx="17" ry="10" fill="#f3bfca"/><g fill="#694e44"><ellipse cx="119" cy="158" rx="5" ry="7"/><ellipse cx="182" cy="158" rx="5" ry="7"/><path d="M146 172Q151 166 157 172L151 177Z"/></g><path d="M151 176Q143 190 136 180M151 176Q160 190 167 180" fill="none" stroke="#694e44" stroke-width="3" stroke-linecap="round"/><g transform="translate(217 107)"><g fill="#dc90ad"><ellipse cy="-12" rx="9" ry="13"/><ellipse cy="12" rx="9" ry="13"/><ellipse cx="-12" rx="13" ry="9"/><ellipse cx="12" rx="13" ry="9"/></g><circle r="7" fill="#ffdf8f"/></g><path d="M145 224L155 224L154 242L145 242Z" fill="#fff5e6"/><path d="M137 229L162 229L162 237L137 237Z" fill="#fff5e6"/></svg></div>
+            <span class="friend-name">おともだちの もも</span>
             <p id="mascotSpeech">いっしょに すすもう！</p>
           </div>
 
@@ -53,7 +51,7 @@
           </div>
         </div>
 
-        <div id="answers" class="answers" aria-label="こたえをえらぶ"></div>
+        <p class="answer-guide">こたえを えらんでね <span>↓</span></p><div id="answers" class="answers" aria-label="こたえをえらぶ"></div>
 
         <div id="feedback" class="feedback" aria-live="assertive">
           <strong id="feedbackTitle"></strong>
@@ -62,8 +60,8 @@
         </div>
       </section>
 
-      <section id="resultScreen" class="result-screen" hidden aria-live="polite">
-        <div class="result-mascot" aria-hidden="true">×</div>
+      <section id="resultScreen" class="result-screen" hidden tabindex="-1" aria-live="polite">
+        <div class="result-mascot" aria-hidden="true"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 310"><ellipse cx="150" cy="285" rx="105" ry="12" fill="#e9dfcf"/><g stroke="#775548" stroke-width="4" stroke-linejoin="round"><path d="M94 124C52 10 110-9 125 113M170 112C181-8 239 13 207 132" fill="#fffaf0"/><path d="M100 95C85 37 106 29 111 93M189 93C202 32 216 40 201 101" stroke="#efbac3" stroke-width="13" stroke-linecap="round"/><ellipse cx="151" cy="235" rx="62" ry="53" fill="#f4b8c8"/><ellipse cx="102" cy="275" rx="28" ry="15" fill="#fffaf0"/><ellipse cx="193" cy="275" rx="28" ry="15" fill="#fffaf0"/><path d="M98 213Q63 210 77 243Q85 251 107 238M206 212Q237 210 226 239Q215 251 198 235" fill="#fffaf0"/><path d="M70 156C65 88 230 80 234 153C253 225 62 237 70 156Z" fill="#fffaf0"/></g><ellipse cx="101" cy="175" rx="17" ry="10" fill="#f3bfca"/><ellipse cx="202" cy="175" rx="17" ry="10" fill="#f3bfca"/><g fill="#694e44"><ellipse cx="119" cy="158" rx="5" ry="7"/><ellipse cx="182" cy="158" rx="5" ry="7"/><path d="M146 172Q151 166 157 172L151 177Z"/></g><path d="M151 176Q143 190 136 180M151 176Q160 190 167 180" fill="none" stroke="#694e44" stroke-width="3" stroke-linecap="round"/><g transform="translate(217 107)"><g fill="#dc90ad"><ellipse cy="-12" rx="9" ry="13"/><ellipse cy="12" rx="9" ry="13"/><ellipse cx="-12" rx="13" ry="9"/><ellipse cx="12" rx="13" ry="9"/></g><circle r="7" fill="#ffdf8f"/></g><path d="M145 224L155 224L154 242L145 242Z" fill="#fff5e6"/><path d="M137 229L162 229L162 237L137 237Z" fill="#fff5e6"/></svg></div><div id="resultFlowers" class="result-flowers" aria-label="がんばった10もんのおはな"></div>
         <p class="result-label">10もんクリア！</p>
         <h2 id="rankTitle">九九マスター</h2>
         <p id="resultMessage" class="result-message"></p>
@@ -72,9 +70,9 @@
           <span id="percentResult">0%</span>
         </div>
         <p id="bestComboResult" class="best-combo"></p>
-        <button id="retryButton" class="primary-button" type="button">もういちど ぼうけんする</button>
+        <button id="retryButton" class="primary-button" type="button">もういちど あそぶ</button>
       </section>
-    </main>
+    </main><footer>ちいさな「できた！」を、いっぱい さかせよう。✿</footer>
 
     <div id="nextDock" class="next-dock" hidden>
       <button id="nextButton" class="next-button" type="button">つぎの もんだいへ <span aria-hidden="true">→</span></button>

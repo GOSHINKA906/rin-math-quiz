@@ -90,7 +90,9 @@ function renderPath() {
   questPath.innerHTML = "";
   for (let i = 0; i < TOTAL_QUESTIONS; i += 1) {
     const node = document.createElement("li");
-    node.textContent = i + 1;
+    node.textContent = i < results.length ? "✿" : i + 1;
+    node.setAttribute("aria-label", `${i + 1}もんめ${i < results.length ? (results[i] ? "、せいかい" : "、れんしゅうしたよ") : ""}`);
+    if (i === questionIndex) node.setAttribute("aria-current", "step");
     if (i < results.length) node.classList.add(results[i] ? "is-correct" : "is-wrong");
     if (i === questionIndex && questionIndex < TOTAL_QUESTIONS) node.classList.add("is-current");
     questPath.append(node);
@@ -99,18 +101,18 @@ function renderPath() {
 
 function renderGroups(first, second) {
   groupVisual.innerHTML = "";
-  groupVisual.setAttribute("aria-label", `${second}こずつのまとまりが${first}こ`);
-  for (let groupIndex = 0; groupIndex < first; groupIndex += 1) {
+  groupVisual.setAttribute("aria-label", `${first}こずつのまとまりが${second}こ`);
+  for (let groupIndex = 0; groupIndex < second; groupIndex += 1) {
     const group = document.createElement("div");
     group.className = "dot-group";
-    for (let dotIndex = 0; dotIndex < second; dotIndex += 1) {
+    for (let dotIndex = 0; dotIndex < first; dotIndex += 1) {
       const dot = document.createElement("i");
       dot.className = "dot";
       group.append(dot);
     }
     groupVisual.append(group);
   }
-  visualCaption.textContent = `${second}こずつの まとまりが ${first}こ`;
+  visualCaption.textContent = `${first}こずつの おさらが ${second}まい`;
 }
 
 function renderQuestion() {
@@ -137,7 +139,7 @@ function renderQuestion() {
   feedbackFormula.textContent = "";
   feedbackHint.textContent = "";
   mascot.className = "mascot";
-  mascotSpeech.textContent = questionIndex === 0 ? "いっしょに すすもう！" : "つぎも いけるよ！";
+  mascotSpeech.textContent = questionIndex === 0 ? "いっしょに あそぼう！" : "ゆっくりで だいじょうぶ ♡";
   nextDock.hidden = true;
   document.body.classList.remove("has-next");
   renderPath();
@@ -156,7 +158,7 @@ function chooseAnswer(button, selected) {
   });
 
   feedbackFormula.textContent = `${currentQuestion.first} × ${currentQuestion.second} = ${currentQuestion.correct}`;
-  feedbackHint.textContent = `${currentQuestion.second}こずつが ${currentQuestion.first}まとまりで ${currentQuestion.correct}こ`;
+  feedbackHint.textContent = `${currentQuestion.first}こずつが ${currentQuestion.second}まとまりで ${currentQuestion.correct}こ`;
 
   if (isCorrect) {
     correctCount += 1;
@@ -165,7 +167,7 @@ function chooseAnswer(button, selected) {
     stars += 10 + Math.min(combo - 1, 5) * 2;
     feedbackTitle.textContent = combo >= 3 ? `${combo}もん れんぞくせいかい！` : "せいかい！ ピンポーン！";
     mascot.classList.add("is-happy");
-    mascotSpeech.textContent = combo >= 3 ? "コンボだ！すごい！" : "やったね！";
+    mascotSpeech.textContent = combo >= 3 ? "おはなが いっぱい！" : "やったね！";
     playCorrectSound();
   } else {
     combo = 0;
@@ -173,7 +175,7 @@ function chooseAnswer(button, selected) {
     feedback.classList.add("is-wrong");
     feedbackTitle.textContent = "おしい！ こたえをみてみよう";
     mascot.classList.add("is-sad");
-    mascotSpeech.textContent = "だいじょうぶ。つぎへ！";
+    mascotSpeech.textContent = "いっしょに おぼえよう ♡";
     playWrongSound();
   }
 
@@ -188,6 +190,7 @@ function chooseAnswer(button, selected) {
 }
 
 function nextQuestion() {
+  if (!answered || !resultScreen.hidden) return;
   questionIndex += 1;
   if (questionIndex >= TOTAL_QUESTIONS) {
     showResult();
@@ -197,10 +200,10 @@ function nextQuestion() {
 }
 
 function getRank(score) {
-  if (score === 10) return ["九九のレジェンド", "ぜんもんせいかい！ すごい集中力だね！"];
-  if (score >= 8) return ["九九マスター", "あと少しでパーフェクト！ とってもいい調子！"];
-  if (score >= 6) return ["かけ算レンジャー", "しっかり力がついているよ！"];
-  return ["九九チャレンジャー", "ぼうけんするたびに、どんどん強くなるよ！"];
+  if (score === 10) return ["まんかい！九九ガーデン", "ぜんもん せいかい！ ももも とっても うれしいな ♡"];
+  if (score >= 8) return ["おはなの メダル", "「できた！」が いっぱい。すてきな おにわに なったね！"];
+  if (score >= 6) return ["すくすく おはなさん", "ひとつずつ ちからが ついているよ。がんばったね！"];
+  return ["がんばりの たね", "さいごまで あそべたね！ また いっしょに そだてよう ♡"];
 }
 
 function showResult() {
@@ -214,6 +217,7 @@ function showResult() {
   document.querySelector("#correctResult").textContent = correctCount;
   document.querySelector("#percentResult").textContent = `${correctCount * 10}%`;
   document.querySelector("#bestComboResult").textContent = `さいこう ${bestCombo}もん れんぞくせいかい ／ スター ${stars}こ`;
+  document.querySelector("#resultFlowers").textContent = "✿ ".repeat(TOTAL_QUESTIONS);
   playFinishSound();
   resultScreen.focus({ preventScroll: true });
 }
@@ -236,7 +240,9 @@ function resetGame() {
 
 function ensureAudio() {
   if (!soundEnabled) return null;
-  if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const AudioApi = window.AudioContext || window.webkitAudioContext;
+  if (!AudioApi) return null;
+  if (!audioContext) audioContext = new AudioApi();
   if (audioContext.state === "suspended") audioContext.resume();
   return audioContext;
 }
@@ -287,12 +293,16 @@ modeButtons.forEach((button) => {
   button.addEventListener("click", () => {
     if (button.dataset.mode === mode) return;
     mode = button.dataset.mode;
-    modeButtons.forEach((item) => item.classList.toggle("is-active", item === button));
+    modeButtons.forEach((item) => {
+      item.classList.toggle("is-active", item === button);
+      item.setAttribute("aria-pressed", String(item === button));
+    });
     resetGame();
   });
 });
 
 document.addEventListener("keydown", (event) => {
+  if (event.repeat || !resultScreen.hidden || event.target.closest("button")) return;
   if (!answered && ["1", "2", "3"].includes(event.key)) {
     answers.querySelectorAll("button")[Number(event.key) - 1]?.click();
   } else if (answered && (event.key === "Enter" || event.key === " ")) {
