@@ -1,83 +1,91 @@
 <!doctype html>
 <html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#f8e9e9" />
-    <title>りんの九九ガーデン</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23ffd84d'/%3E%3Cpath d='M20 20l24 24M44 20L20 44' stroke='%2325324b' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="style.css?v=20260909-garden" />
-  </head>
-  <body>
-    <header class="app-header">
-      <div class="brand-mark" aria-hidden="true">✿</div>
-      <div>
-        <p class="brand-kicker">あそんで、そだつ。りんの おにわ</p>
-        <h1>りんの九九ガーデン</h1>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fff8ec">
+  <meta name="description" content="うさぎのももと九九のお庭を育てよう。小学2年生向けのかけ算あそび。">
+  <title>りんの九九ガーデン</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23fff3da'/%3E%3Ctext x='10' y='48' font-size='44'%3E🌼%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css?v=20260924-adventure">
+  <script src="script.js?v=20260924-adventure" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="りんの九九ガーデン、はじめから">
+      <span class="brand-flower" aria-hidden="true">✿</span>
+      <span><small>ももと いっしょに あそぼう</small><strong>りんの九九ガーデン</strong></span>
+    </a>
+    <button id="soundButton" class="sound-toggle" type="button" aria-pressed="false" aria-label="おとを だす"><span aria-hidden="true">♪</span><span id="soundLabel">おと OFF</span></button>
+  </header>
+
+  <main>
+    <section id="startScreen" class="start-screen screen" aria-labelledby="startTitle">
+      <div class="sky-decor cloud cloud-one" aria-hidden="true"></div><div class="sky-decor cloud cloud-two" aria-hidden="true"></div>
+      <div class="intro-layout">
+        <div class="intro-copy">
+          <span class="eyebrow">🌱 ちいさな ぼうけんの はじまり</span>
+          <h1 id="startTitle">九九で<span>おはなを</span><br>さかせよう！</h1>
+          <p class="intro-lead">こたえる・ジャンプする・みつける。<br>ももと いっしょに、10この おはなを そだてよう。</p>
+          <div class="intro-pills" aria-label="あそびかた"><span>① たねを えらぶ</span><span>② 九九で あそぶ</span><span>③ おにわが かんせい</span></div>
+        </div>
+        <div class="intro-art" aria-hidden="true"><div class="sun"></div><div class="intro-hill"></div><img class="hero-bunny" src="bunny.svg" alt=""><div class="art-flower art-flower-left"><i></i></div><div class="art-flower art-flower-right"><i></i></div><div class="butterfly">♡</div></div>
       </div>
-      <button id="soundButton" class="icon-button" type="button" aria-pressed="true" aria-label="音を消す" title="音を消す">
-        <span aria-hidden="true">♪</span>
-      </button>
-    </header>
-
-    <main>
-      <div class="welcome"><span class="eyebrow">✿ ももと いっしょに ✿</span><h2>九九で おはなを さかせよう</h2><p>ひとつずつ、じぶんの ペースで だいじょうぶ。</p></div>
-      <section id="gameScreen" class="game-board" aria-label="かけ算クイズ">
-        <div class="top-controls">
-          <div class="mode-switch" aria-label="むずかしさ">
-            <button class="mode-button is-active" type="button" data-mode="easy" aria-pressed="true">2〜5のだん</button>
-            <button class="mode-button" type="button" data-mode="all" aria-pressed="false">1〜9のだん</button>
-          </div>
-          <div class="score-group" aria-label="ゲームのきろく">
-            <span class="score-chip"><span aria-hidden="true">★</span><b id="starCount">0</b><small>スター</small></span>
-            <span class="score-chip combo-chip"><span aria-hidden="true">♡</span><b id="comboCount">0</b><small>れんぞく</small></span>
+      <div class="setup-card">
+        <div class="setup-group">
+          <div class="setup-heading"><span class="number-badge">1</span><div><h2>どの おはなを そだてる？</h2><p>すきな たねを ひとつ えらんでね</p></div></div>
+          <div class="seed-list" role="group" aria-label="おはなの しゅるい">
+            <button class="seed-option is-selected" data-flower="daisy" type="button" aria-pressed="true"><span class="seed-illustration daisy" aria-hidden="true">✿</span><strong>しろい おはな</strong></button>
+            <button class="seed-option" data-flower="tulip" type="button" aria-pressed="false"><span class="seed-illustration tulip" aria-hidden="true">✿</span><strong>ももいろ おはな</strong></button>
+            <button class="seed-option" data-flower="sunflower" type="button" aria-pressed="false"><span class="seed-illustration sunflower" aria-hidden="true">✿</span><strong>おひさま おはな</strong></button>
           </div>
         </div>
-
-        <div class="path-label"><span>きょうの おはな</span><span>10もんで ゴール ⚑</span></div><ol id="questPath" class="quest-path" aria-label="10もんのすすみぐあい"></ol>
-
-        <div class="play-area">
-          <div class="mascot-wrap">
-            <div id="mascot" class="mascot"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 310"><ellipse cx="150" cy="285" rx="105" ry="12" fill="#e9dfcf"/><g stroke="#775548" stroke-width="4" stroke-linejoin="round"><path d="M94 124C52 10 110-9 125 113M170 112C181-8 239 13 207 132" fill="#fffaf0"/><path d="M100 95C85 37 106 29 111 93M189 93C202 32 216 40 201 101" stroke="#efbac3" stroke-width="13" stroke-linecap="round"/><ellipse cx="151" cy="235" rx="62" ry="53" fill="#f4b8c8"/><ellipse cx="102" cy="275" rx="28" ry="15" fill="#fffaf0"/><ellipse cx="193" cy="275" rx="28" ry="15" fill="#fffaf0"/><path d="M98 213Q63 210 77 243Q85 251 107 238M206 212Q237 210 226 239Q215 251 198 235" fill="#fffaf0"/><path d="M70 156C65 88 230 80 234 153C253 225 62 237 70 156Z" fill="#fffaf0"/></g><ellipse cx="101" cy="175" rx="17" ry="10" fill="#f3bfca"/><ellipse cx="202" cy="175" rx="17" ry="10" fill="#f3bfca"/><g fill="#694e44"><ellipse cx="119" cy="158" rx="5" ry="7"/><ellipse cx="182" cy="158" rx="5" ry="7"/><path d="M146 172Q151 166 157 172L151 177Z"/></g><path d="M151 176Q143 190 136 180M151 176Q160 190 167 180" fill="none" stroke="#694e44" stroke-width="3" stroke-linecap="round"/><g transform="translate(217 107)"><g fill="#dc90ad"><ellipse cy="-12" rx="9" ry="13"/><ellipse cy="12" rx="9" ry="13"/><ellipse cx="-12" rx="13" ry="9"/><ellipse cx="12" rx="13" ry="9"/></g><circle r="7" fill="#ffdf8f"/></g><path d="M145 224L155 224L154 242L145 242Z" fill="#fff5e6"/><path d="M137 229L162 229L162 237L137 237Z" fill="#fff5e6"/></svg></div>
-            <span class="friend-name">おともだちの もも</span>
-            <p id="mascotSpeech">いっしょに すすもう！</p>
-          </div>
-
-          <div class="question-area">
-            <p id="questionNumber" class="question-number">だい 1 もん</p>
-            <div id="question" class="question" aria-live="polite">3 × 4 = ?</div>
-            <div id="groupVisual" class="group-visual" aria-label="かけ算のまとまり"></div>
-            <p id="visualCaption" class="visual-caption"></p>
+        <div class="setup-group setup-level">
+          <div class="setup-heading"><span class="number-badge">2</span><div><h2>どこから はじめる？</h2><p>あとから もういちど えらべるよ</p></div></div>
+          <div class="level-list" role="group" aria-label="むずかしさ">
+            <button class="level-option is-selected" data-level="easy" type="button" aria-pressed="true"><span>🌱</span><strong>ゆっくりコース</strong><small>2〜5の だん</small></button>
+            <button class="level-option" data-level="all" type="button" aria-pressed="false"><span>🌈</span><strong>ぜんぶコース</strong><small>1〜9の だん</small></button>
           </div>
         </div>
+        <button id="startButton" class="primary-button start-button" type="button">おにわへ しゅっぱつ <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
 
-        <p class="answer-guide">こたえを えらんでね <span>↓</span></p><div id="answers" class="answers" aria-label="こたえをえらぶ"></div>
-
-        <div id="feedback" class="feedback" aria-live="assertive">
-          <strong id="feedbackTitle"></strong>
-          <span id="feedbackFormula"></span>
-          <small id="feedbackHint"></small>
+    <section id="gameScreen" class="game-screen screen" aria-labelledby="gameTitle" hidden>
+      <div class="game-topline"><span id="chapterLabel" class="chapter-label">はじまりの おにわ</span><span id="stepLabel" class="step-label">1 / 10</span></div>
+      <div class="garden-scene">
+        <div class="garden-sun" aria-hidden="true"></div>
+        <div class="garden-heading"><div><span class="garden-kicker">MOMO'S LITTLE GARDEN</span><h1 id="gameTitle">ももの おにわ</h1></div><span id="flowerCount" class="flower-count">🌼 0 / 10</span></div>
+        <div id="gardenPlots" class="garden-plots" aria-label="おにわの ようす"></div>
+        <div class="garden-ground"></div>
+      </div>
+      <div class="game-content">
+        <div class="momo-card"><img src="bunny.svg" alt="うさぎの もも" width="96" height="100"><p id="momoLine">いっしょに そだてよう！</p></div>
+        <div class="challenge-card">
+          <div class="challenge-header"><span id="missionTag" class="mission-tag">こたえを えらぼう</span><span id="questionBadge">だい 1 もん</span></div>
+          <h2 id="missionTitle">おはなの かずは？</h2>
+          <p id="missionText" class="mission-text"></p>
+          <div id="equation" class="equation" aria-live="polite"></div>
+          <div id="groupVisual" class="group-visual" aria-label="かずの まとまり"></div>
+          <p id="groupCaption" class="group-caption"></p>
+          <div id="playControls" class="play-controls"></div>
+          <button id="hintButton" class="hint-button" type="button" aria-expanded="false">💡 ヒントを みる</button>
+          <div id="hintPanel" class="hint-panel" hidden></div>
+          <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section id="resultScreen" class="result-screen" hidden tabindex="-1" aria-live="polite">
-        <div class="result-mascot" aria-hidden="true"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 310"><ellipse cx="150" cy="285" rx="105" ry="12" fill="#e9dfcf"/><g stroke="#775548" stroke-width="4" stroke-linejoin="round"><path d="M94 124C52 10 110-9 125 113M170 112C181-8 239 13 207 132" fill="#fffaf0"/><path d="M100 95C85 37 106 29 111 93M189 93C202 32 216 40 201 101" stroke="#efbac3" stroke-width="13" stroke-linecap="round"/><ellipse cx="151" cy="235" rx="62" ry="53" fill="#f4b8c8"/><ellipse cx="102" cy="275" rx="28" ry="15" fill="#fffaf0"/><ellipse cx="193" cy="275" rx="28" ry="15" fill="#fffaf0"/><path d="M98 213Q63 210 77 243Q85 251 107 238M206 212Q237 210 226 239Q215 251 198 235" fill="#fffaf0"/><path d="M70 156C65 88 230 80 234 153C253 225 62 237 70 156Z" fill="#fffaf0"/></g><ellipse cx="101" cy="175" rx="17" ry="10" fill="#f3bfca"/><ellipse cx="202" cy="175" rx="17" ry="10" fill="#f3bfca"/><g fill="#694e44"><ellipse cx="119" cy="158" rx="5" ry="7"/><ellipse cx="182" cy="158" rx="5" ry="7"/><path d="M146 172Q151 166 157 172L151 177Z"/></g><path d="M151 176Q143 190 136 180M151 176Q160 190 167 180" fill="none" stroke="#694e44" stroke-width="3" stroke-linecap="round"/><g transform="translate(217 107)"><g fill="#dc90ad"><ellipse cy="-12" rx="9" ry="13"/><ellipse cy="12" rx="9" ry="13"/><ellipse cx="-12" rx="13" ry="9"/><ellipse cx="12" rx="13" ry="9"/></g><circle r="7" fill="#ffdf8f"/></g><path d="M145 224L155 224L154 242L145 242Z" fill="#fff5e6"/><path d="M137 229L162 229L162 237L137 237Z" fill="#fff5e6"/></svg></div><div id="resultFlowers" class="result-flowers" aria-label="がんばった10もんのおはな"></div>
-        <p class="result-label">10もんクリア！</p>
-        <h2 id="rankTitle">九九マスター</h2>
-        <p id="resultMessage" class="result-message"></p>
-        <div class="result-score">
-          <strong><span id="correctResult">0</span><small>/ 10もん</small></strong>
-          <span id="percentResult">0%</span>
-        </div>
-        <p id="bestComboResult" class="best-combo"></p>
-        <button id="retryButton" class="primary-button" type="button">もういちど あそぶ</button>
-      </section>
-    </main><footer>ちいさな「できた！」を、いっぱい さかせよう。✿</footer>
-
-    <div id="nextDock" class="next-dock" hidden>
-      <button id="nextButton" class="next-button" type="button">つぎの もんだいへ <span aria-hidden="true">→</span></button>
-    </div>
-
-    <script src="script.js?v=20260909-garden"></script>
-  </body>
+    <section id="finishScreen" class="finish-screen screen" aria-labelledby="finishTitle" hidden tabindex="-1">
+      <div class="finish-confetti" aria-hidden="true">✦　✿　✦</div>
+      <span class="finish-eyebrow">10この おはなを そだてたよ！</span>
+      <h1 id="finishTitle">おにわが できた！</h1>
+      <p>ひとつずつ すすんで、こんなに すてきに なったね。</p>
+      <div id="finishGarden" class="finish-garden" aria-label="かんせいした おにわ"></div>
+      <div class="finish-note"><img src="bunny.svg" alt="" width="90" height="92"><div><strong>ももから りんへ</strong><p id="finishMessage">いっしょに あそんでくれて ありがとう！</p></div></div>
+      <div class="finish-actions"><button id="againButton" class="primary-button" type="button">もういちど あそぶ <span aria-hidden="true">↻</span></button><button id="changeButton" class="secondary-button" type="button">おはなを かえる</button></div>
+    </section>
+  </main>
+  <footer>まちがえても だいじょうぶ。おはなは いつでも そだつよ。 ✿</footer>
+</body>
 </html>

@@ -1,314 +1,288 @@
-const TOTAL_QUESTIONS = 10;
+const $ = (selector) => document.querySelector(selector);
+const TOTAL = 10;
+const MISSION_ORDER = ["answer", "hop", "answer", "missing", "answer", "hop", "missing", "answer", "hop", "missing"];
+const FLOWERS = {
+  daisy: { name: "しろい おはな", icon: "✿" },
+  tulip: { name: "ももいろ おはな", icon: "✿" },
+  sunflower: { name: "おひさま おはな", icon: "✿" },
+};
 
-const gameScreen = document.querySelector("#gameScreen");
-const resultScreen = document.querySelector("#resultScreen");
-const questionNumber = document.querySelector("#questionNumber");
-const questionText = document.querySelector("#question");
-const groupVisual = document.querySelector("#groupVisual");
-const visualCaption = document.querySelector("#visualCaption");
-const answers = document.querySelector("#answers");
-const feedback = document.querySelector("#feedback");
-const feedbackTitle = document.querySelector("#feedbackTitle");
-const feedbackFormula = document.querySelector("#feedbackFormula");
-const feedbackHint = document.querySelector("#feedbackHint");
-const starCount = document.querySelector("#starCount");
-const comboCount = document.querySelector("#comboCount");
-const questPath = document.querySelector("#questPath");
-const mascot = document.querySelector("#mascot");
-const mascotSpeech = document.querySelector("#mascotSpeech");
-const nextDock = document.querySelector("#nextDock");
-const nextButton = document.querySelector("#nextButton");
-const retryButton = document.querySelector("#retryButton");
-const soundButton = document.querySelector("#soundButton");
-const modeButtons = document.querySelectorAll(".mode-button");
+const state = {
+  flower: "daisy", level: "easy", index: 0, planted: 0,
+  firstTry: 0, mistakes: 0, hop: 0, question: null,
+  used: new Set(), sound: false, audio: null, locked: false,
+};
 
-let mode = "easy";
-let questionIndex = 0;
-let correctCount = 0;
-let combo = 0;
-let bestCombo = 0;
-let stars = 0;
-let currentQuestion = null;
-let answered = false;
-let usedQuestions = new Set();
-let results = [];
-let soundEnabled = true;
-let audioContext = null;
-
-function randomItem(items) {
-  return items[Math.floor(Math.random() * items.length)];
-}
-
+function randomFrom(items) { return items[Math.floor(Math.random() * items.length)]; }
 function shuffle(items) {
-  const copy = [...items];
-  for (let i = copy.length - 1; i > 0; i -= 1) {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
+    [out[i], out[j]] = [out[j], out[i]];
   }
-  return copy;
+  return out;
 }
-
-function buildQuestion() {
-  const firstChoices = mode === "easy" ? [2, 3, 4, 5] : [1, 2, 3, 4, 5, 6, 7, 8, 9];
-  let first;
-  let second;
-  let key;
-
+function show(screen) {
+  ["#startScreen", "#gameScreen", "#finishScreen"].forEach((id) => { $(id).hidden = id !== screen; });
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+function pickQuestion(kind) {
+  const firsts = state.level === "easy" ? [2, 3, 4, 5] : [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const seconds = kind === "hop" ? [3, 4, 5] : [2, 3, 4, 5, 6, 7, 8, 9];
+  let first, second, key;
   do {
-    first = randomItem(firstChoices);
-    second = 1 + Math.floor(Math.random() * 9);
+    first = randomFrom(firsts);
+    second = randomFrom(seconds);
     key = `${first}x${second}`;
-  } while (usedQuestions.has(key) && usedQuestions.size < firstChoices.length * 9);
-
-  usedQuestions.add(key);
-  const correct = first * second;
-  const candidates = shuffle([
-    correct + first,
-    correct - first,
-    correct + second,
-    correct - second,
-    correct + 1,
-    correct - 1,
-    correct + 10,
-    correct - 10,
-  ]).filter((value) => value > 0 && value <= 81 && value !== correct);
-
-  const choices = [correct];
-  for (const value of candidates) {
-    if (!choices.includes(value)) choices.push(value);
-    if (choices.length === 3) break;
-  }
-  while (choices.length < 3) {
-    const value = 1 + Math.floor(Math.random() * 81);
-    if (!choices.includes(value)) choices.push(value);
-  }
-
-  return { first, second, correct, choices: shuffle(choices) };
+  } while (state.used.has(key));
+  state.used.add(key);
+  return { first, second, answer: first * second, kind };
 }
-
-function renderPath() {
-  questPath.innerHTML = "";
-  for (let i = 0; i < TOTAL_QUESTIONS; i += 1) {
-    const node = document.createElement("li");
-    node.textContent = i < results.length ? "✿" : i + 1;
-    node.setAttribute("aria-label", `${i + 1}もんめ${i < results.length ? (results[i] ? "、せいかい" : "、れんしゅうしたよ") : ""}`);
-    if (i === questionIndex) node.setAttribute("aria-current", "step");
-    if (i < results.length) node.classList.add(results[i] ? "is-correct" : "is-wrong");
-    if (i === questionIndex && questionIndex < TOTAL_QUESTIONS) node.classList.add("is-current");
-    questPath.append(node);
+function choicesFor(correct, step, max = 81) {
+  const pool = shuffle([correct - step, correct + step, correct - 1, correct + 1, correct - 2, correct + 2, correct - 10, correct + 10]);
+  const picks = [correct];
+  for (const item of pool) {
+    if (item > 0 && item <= max && !picks.includes(item)) picks.push(item);
+    if (picks.length === 3) break;
+  }
+  for (let n = 1; picks.length < 3 && n <= max; n++) if (!picks.includes(n)) picks.push(n);
+  return shuffle(picks);
+}
+function flowerMarkup(bloomed, extra = "") {
+  return `<span class="plot-flower ${state.flower} ${bloomed ? "is-bloomed" : ""} ${extra}" aria-hidden="true"><span class="stem"></span><span class="leaf"></span><span class="blossom">${FLOWERS[state.flower].icon}</span></span>`;
+}
+function renderGarden(target, count) {
+  target.innerHTML = "";
+  for (let i = 0; i < TOTAL; i++) {
+    const plot = document.createElement("div");
+    plot.className = `garden-plot ${i < count ? "has-flower" : ""} ${i === count - 1 ? "just-grown" : ""}`;
+    plot.setAttribute("aria-label", `${i + 1}ばんめの おはな、${i < count ? "さいた" : "これから"}`);
+    plot.innerHTML = flowerMarkup(i < count) + `<span class="plot-soil" aria-hidden="true"></span>`;
+    target.append(plot);
   }
 }
-
-function renderGroups(first, second) {
-  groupVisual.innerHTML = "";
-  groupVisual.setAttribute("aria-label", `${first}こずつのまとまりが${second}こ`);
-  for (let groupIndex = 0; groupIndex < second; groupIndex += 1) {
+function renderGroups(revealed = true) {
+  const q = state.question;
+  const visual = $("#groupVisual");
+  visual.innerHTML = "";
+  for (let groupIndex = 0; groupIndex < q.second; groupIndex++) {
     const group = document.createElement("div");
-    group.className = "dot-group";
-    for (let dotIndex = 0; dotIndex < first; dotIndex += 1) {
-      const dot = document.createElement("i");
-      dot.className = "dot";
-      group.append(dot);
+    group.className = "count-pot";
+    if (q.kind === "hop" && groupIndex >= state.hop) group.classList.add("is-waiting");
+    const dots = document.createElement("div");
+    dots.className = "count-dots";
+    for (let dotIndex = 0; dotIndex < q.first; dotIndex++) {
+      const dot = document.createElement("span");
+      dot.className = "count-dot";
+      dot.textContent = "✿";
+      dots.append(dot);
     }
-    groupVisual.append(group);
+    const label = document.createElement("small");
+    label.textContent = revealed && (q.kind !== "hop" || groupIndex < state.hop) ? `${(groupIndex + 1) * q.first}` : "？";
+    group.append(dots, label);
+    visual.append(group);
   }
-  visualCaption.textContent = `${first}こずつの おさらが ${second}まい`;
+  visual.setAttribute("aria-label", `${q.first}こずつが ${q.second}まとまり`);
+  $("#groupCaption").textContent = `${q.first}こずつの おはなばちが ${q.second}こ`;
 }
-
-function renderQuestion() {
-  answered = false;
-  currentQuestion = buildQuestion();
-  questionNumber.textContent = `だい ${questionIndex + 1} もん`;
-  questionText.textContent = `${currentQuestion.first} × ${currentQuestion.second} = ?`;
-  renderGroups(currentQuestion.first, currentQuestion.second);
-
-  answers.innerHTML = "";
-  currentQuestion.choices.forEach((choice, index) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "answer-button";
-    button.textContent = choice;
-    button.dataset.value = choice;
-    button.setAttribute("aria-label", `${index + 1}ばん、${choice}`);
-    button.addEventListener("click", () => chooseAnswer(button, choice));
-    answers.append(button);
-  });
-
-  feedback.className = "feedback";
-  feedbackTitle.textContent = "";
-  feedbackFormula.textContent = "";
-  feedbackHint.textContent = "";
-  mascot.className = "mascot";
-  mascotSpeech.textContent = questionIndex === 0 ? "いっしょに あそぼう！" : "ゆっくりで だいじょうぶ ♡";
-  nextDock.hidden = true;
-  document.body.classList.remove("has-next");
-  renderPath();
+function button(label, className, handler) {
+  const element = document.createElement("button");
+  element.type = "button";
+  element.className = className;
+  element.textContent = label;
+  element.addEventListener("click", handler);
+  return element;
 }
-
-function chooseAnswer(button, selected) {
-  if (answered) return;
-  answered = true;
-  const isCorrect = selected === currentQuestion.correct;
-  results.push(isCorrect);
-
-  answers.querySelectorAll("button").forEach((answerButton) => {
-    answerButton.disabled = true;
-    const value = Number(answerButton.dataset.value);
-    if (value === currentQuestion.correct) answerButton.classList.add("is-correct");
+function renderAnswers(kind) {
+  const q = state.question;
+  const container = $("#playControls");
+  container.className = "play-controls answer-grid";
+  const correct = kind === "missing" ? q.second : q.answer;
+  const step = kind === "missing" ? 1 : q.first;
+  const max = kind === "missing" ? 9 : 81;
+  choicesFor(correct, step, max).forEach((value) => {
+    const choice = button(String(value), "answer-choice", () => checkAnswer(choice, value, correct));
+    choice.setAttribute("aria-label", `${value}`);
+    container.append(choice);
   });
-
-  feedbackFormula.textContent = `${currentQuestion.first} × ${currentQuestion.second} = ${currentQuestion.correct}`;
-  feedbackHint.textContent = `${currentQuestion.first}こずつが ${currentQuestion.second}まとまりで ${currentQuestion.correct}こ`;
-
-  if (isCorrect) {
-    correctCount += 1;
-    combo += 1;
-    bestCombo = Math.max(bestCombo, combo);
-    stars += 10 + Math.min(combo - 1, 5) * 2;
-    feedbackTitle.textContent = combo >= 3 ? `${combo}もん れんぞくせいかい！` : "せいかい！ ピンポーン！";
-    mascot.classList.add("is-happy");
-    mascotSpeech.textContent = combo >= 3 ? "おはなが いっぱい！" : "やったね！";
-    playCorrectSound();
+}
+function renderHop() {
+  const q = state.question;
+  const controls = $("#playControls");
+  controls.className = "play-controls hop-controls";
+  const hopButton = button("🐰 ぴょん！", "hop-button", () => {
+    if (state.locked) return;
+    state.hop++;
+    counter.textContent = state.hop < q.second ? `あと ${q.second - state.hop}かい ジャンプ` : "ぜんぶ ジャンプできた！";
+    renderGroups();
+    $("#equation").textContent = `${q.first} × ${state.hop} = ${q.first * state.hop}`;
+    $("#momoLine").textContent = state.hop < q.second ? `${q.first * state.hop}こ！ つぎも ぴょん！` : "ぜんぶ かぞえたね！";
+    playChime(state.hop < q.second ? 440 + state.hop * 65 : 880);
+    if (state.hop === q.second) completeMission();
+  });
+  controls.append(hopButton);
+  const counter = document.createElement("p");
+  counter.className = "hop-counter";
+  counter.textContent = `あと ${q.second}かい ジャンプ`;
+  controls.append(counter);
+}
+function renderMission() {
+  state.locked = false;
+  state.mistakes = 0;
+  state.hop = 0;
+  const kind = MISSION_ORDER[state.index];
+  const q = state.question = pickQuestion(kind);
+  const chapter = state.index < 3 ? "はじまりの おにわ" : state.index < 7 ? "こもれびの おにわ" : "にじいろの おにわ";
+  $("#chapterLabel").textContent = `✿ ${chapter}`;
+  $("#stepLabel").textContent = `${state.index + 1} / ${TOTAL}`;
+  $("#questionBadge").textContent = `だい ${state.index + 1} もん`;
+  $("#flowerCount").textContent = `🌼 ${state.planted} / ${TOTAL}`;
+  $("#gameScreen").dataset.chapter = String(Math.floor(state.index / 3));
+  $("#feedback").textContent = "";
+  $("#feedback").className = "feedback";
+  $("#hintButton").hidden = kind === "hop";
+  $("#hintButton").setAttribute("aria-expanded", "false");
+  $("#hintButton").textContent = "💡 ヒントを みる";
+  $("#hintPanel").hidden = true;
+  $("#hintPanel").textContent = "";
+  $("#playControls").innerHTML = "";
+  $("#momoLine").textContent = kind === "hop" ? "いっしょに かぞえよう！" : "ゆっくりで だいじょうぶ！";
+  if (kind === "answer") {
+    $("#missionTag").textContent = "① こたえを えらぼう";
+    $("#missionTitle").textContent = "おはなは ぜんぶで なんこ？";
+    $("#missionText").textContent = `${q.first}こずつの おはなが ${q.second}はち。いくつに なるかな？`;
+    $("#equation").textContent = `${q.first} × ${q.second} = ？`;
+    renderGroups(false);
+    renderAnswers(kind);
+  } else if (kind === "missing") {
+    $("#missionTag").textContent = "③ かくれた かずを みつけよう";
+    $("#missionTitle").textContent = "はちは なんこ ある？";
+    $("#missionText").textContent = `${q.first}こずつで ${q.answer}こ。□に はいる かずを えらぼう。`;
+    $("#equation").textContent = `${q.first} × □ = ${q.answer}`;
+    renderGroups(false);
+    renderAnswers(kind);
   } else {
-    combo = 0;
-    button.classList.add("is-wrong");
-    feedback.classList.add("is-wrong");
-    feedbackTitle.textContent = "おしい！ こたえをみてみよう";
-    mascot.classList.add("is-sad");
-    mascotSpeech.textContent = "いっしょに おぼえよう ♡";
-    playWrongSound();
+    $("#missionTag").textContent = "② ぴょんぴょん かぞえよう";
+    $("#missionTitle").textContent = "ももと いっしょに ジャンプ！";
+    $("#missionText").textContent = `${q.first}こずつ ${q.second}かい ジャンプ。ボタンを おして かぞえよう。`;
+    $("#equation").textContent = `${q.first} × ${q.second} = ？`;
+    renderGroups();
+    renderHop();
   }
-
-  starCount.textContent = stars;
-  comboCount.textContent = combo;
-  renderPath();
-  nextButton.innerHTML = questionIndex === TOTAL_QUESTIONS - 1
-    ? "けっかを みる <span aria-hidden=\"true\">→</span>"
-    : "つぎの もんだいへ <span aria-hidden=\"true\">→</span>";
-  nextDock.hidden = false;
-  document.body.classList.add("has-next");
+  renderGarden($("#gardenPlots"), state.planted);
 }
-
-function nextQuestion() {
-  if (!answered || !resultScreen.hidden) return;
-  questionIndex += 1;
-  if (questionIndex >= TOTAL_QUESTIONS) {
-    showResult();
+function checkAnswer(choice, value, correct) {
+  if (state.locked || choice.disabled) return;
+  if (value === correct) {
+    if (state.mistakes === 0) state.firstTry++;
+    choice.classList.add("is-correct");
+    completeMission();
     return;
   }
-  renderQuestion();
+  state.mistakes++;
+  choice.disabled = true;
+  choice.classList.add("is-wrong");
+  $("#feedback").className = "feedback is-gentle";
+  $("#feedback").textContent = state.mistakes === 1 ? "おしい！ おはなを かぞえて、もういちど 🌱" : "だいじょうぶ。ヒントを みても いいよ 🌷";
+  $("#momoLine").textContent = "いっしょに もういっかい！";
+  playChime(330);
 }
-
-function getRank(score) {
-  if (score === 10) return ["まんかい！九九ガーデン", "ぜんもん せいかい！ ももも とっても うれしいな ♡"];
-  if (score >= 8) return ["おはなの メダル", "「できた！」が いっぱい。すてきな おにわに なったね！"];
-  if (score >= 6) return ["すくすく おはなさん", "ひとつずつ ちからが ついているよ。がんばったね！"];
-  return ["がんばりの たね", "さいごまで あそべたね！ また いっしょに そだてよう ♡"];
+function completeMission() {
+  if (state.locked) return;
+  state.locked = true;
+  state.planted++;
+  const q = state.question;
+  $("#flowerCount").textContent = `🌼 ${state.planted} / ${TOTAL}`;
+  renderGarden($("#gardenPlots"), state.planted);
+  $("#feedback").className = "feedback is-success";
+  $("#feedback").innerHTML = `<strong>おはなが さいたよ！ ✿</strong><span>${q.first} × ${q.second} = ${q.answer}</span>`;
+  $("#momoLine").textContent = "やったね！ おはなが さいたよ！";
+  const controls = $("#playControls");
+  controls.innerHTML = "";
+  controls.className = "play-controls next-controls";
+  const next = button(state.index === TOTAL - 1 ? "かんせいした おにわを みる →" : "つぎの おはなへ →", "primary-button next-button", () => {
+    state.index++;
+    if (state.index === TOTAL) finish(); else { renderMission(); $("#gameScreen").scrollIntoView({ behavior: "smooth" }); }
+  });
+  controls.append(next);
+  $("#hintButton").hidden = true;
+  $("#hintPanel").hidden = true;
+  playSuccess();
 }
-
-function showResult() {
-  const [rank, message] = getRank(correctCount);
-  gameScreen.hidden = true;
-  resultScreen.hidden = false;
-  nextDock.hidden = true;
-  document.body.classList.remove("has-next");
-  document.querySelector("#rankTitle").textContent = rank;
-  document.querySelector("#resultMessage").textContent = message;
-  document.querySelector("#correctResult").textContent = correctCount;
-  document.querySelector("#percentResult").textContent = `${correctCount * 10}%`;
-  document.querySelector("#bestComboResult").textContent = `さいこう ${bestCombo}もん れんぞくせいかい ／ スター ${stars}こ`;
-  document.querySelector("#resultFlowers").textContent = "✿ ".repeat(TOTAL_QUESTIONS);
-  playFinishSound();
-  resultScreen.focus({ preventScroll: true });
+function showHint() {
+  const q = state.question;
+  const panel = $("#hintPanel");
+  const opening = panel.hidden;
+  panel.hidden = !opening;
+  $("#hintButton").setAttribute("aria-expanded", String(opening));
+  $("#hintButton").textContent = opening ? "💡 ヒントを とじる" : "💡 ヒントを みる";
+  if (!opening) return;
+  const steps = Array.from({ length: q.second }, (_, i) => `${q.first * (i + 1)}`).join(" → ");
+  panel.textContent = q.kind === "missing" ? `${q.first}ずつ かぞえるよ。${steps}。おはなばちは いくつ？` : `${q.first}ずつ かぞえるよ。${steps}。さいごの かずは？`;
+  renderGroups(true);
 }
-
-function resetGame() {
-  questionIndex = 0;
-  correctCount = 0;
-  combo = 0;
-  bestCombo = 0;
-  stars = 0;
-  results = [];
-  usedQuestions = new Set();
-  starCount.textContent = "0";
-  comboCount.textContent = "0";
-  resultScreen.hidden = true;
-  gameScreen.hidden = false;
-  renderQuestion();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+function finish() {
+  show("#finishScreen");
+  renderGarden($("#finishGarden"), TOTAL);
+  $("#finishMessage").textContent = state.firstTry >= 7 ? "じぶんで たくさん みつけたね！ ももも びっくり ♡" : "さいごまで いっしょに そだてたね。ももは うれしいな ♡";
+  $("#finishScreen").focus({ preventScroll: true });
+  playSuccess();
 }
-
-function ensureAudio() {
-  if (!soundEnabled) return null;
-  const AudioApi = window.AudioContext || window.webkitAudioContext;
-  if (!AudioApi) return null;
-  if (!audioContext) audioContext = new AudioApi();
-  if (audioContext.state === "suspended") audioContext.resume();
-  return audioContext;
+function begin() {
+  state.index = 0; state.planted = 0; state.firstTry = 0;
+  state.used.clear();
+  show("#gameScreen");
+  renderMission();
 }
-
-function playNotes(notes, type = "sine") {
-  const context = ensureAudio();
-  if (!context) return;
-  const start = context.currentTime;
-  notes.forEach(([frequency, offset, duration, volume = 0.12]) => {
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.type = type;
-    oscillator.frequency.value = frequency;
-    gain.gain.setValueAtTime(0.001, start + offset);
-    gain.gain.exponentialRampToValueAtTime(volume, start + offset + 0.015);
-    gain.gain.exponentialRampToValueAtTime(0.001, start + offset + duration);
-    oscillator.connect(gain).connect(context.destination);
-    oscillator.start(start + offset);
-    oscillator.stop(start + offset + duration + 0.02);
+function setSelected(selector, chosen) {
+  document.querySelectorAll(selector).forEach((item) => {
+    const selected = item === chosen;
+    item.classList.toggle("is-selected", selected);
+    item.setAttribute("aria-pressed", String(selected));
   });
 }
-
-function playCorrectSound() {
-  playNotes([[523, 0, 0.13], [659, 0.11, 0.13], [784, 0.22, 0.25]], "triangle");
+function audioContext() {
+  if (!state.sound) return null;
+  const Audio = window.AudioContext || window.webkitAudioContext;
+  if (!Audio) return null;
+  if (!state.audio) state.audio = new Audio();
+  if (state.audio.state === "suspended") state.audio.resume();
+  return state.audio;
+}
+function playChime(frequency) {
+  const audio = audioContext();
+  if (!audio) return;
+  const start = audio.currentTime;
+  const osc = audio.createOscillator();
+  const gain = audio.createGain();
+  osc.type = "sine";
+  osc.frequency.value = frequency;
+  gain.gain.setValueAtTime(.0001, start);
+  gain.gain.exponentialRampToValueAtTime(.05, start + .02);
+  gain.gain.exponentialRampToValueAtTime(.0001, start + .2);
+  osc.connect(gain).connect(audio.destination);
+  osc.start(start); osc.stop(start + .21);
+}
+function playSuccess() {
+  [523, 659, 784].forEach((tone, i) => window.setTimeout(() => playChime(tone), i * 95));
 }
 
-function playWrongSound() {
-  playNotes([[330, 0, 0.17, 0.08], [262, 0.13, 0.23, 0.08]], "sine");
-}
-
-function playFinishSound() {
-  playNotes([[523, 0, 0.18], [659, 0.14, 0.18], [784, 0.28, 0.18], [1047, 0.42, 0.38]], "triangle");
-}
-
-nextButton.addEventListener("click", nextQuestion);
-retryButton.addEventListener("click", resetGame);
-
-soundButton.addEventListener("click", () => {
-  soundEnabled = !soundEnabled;
-  soundButton.setAttribute("aria-pressed", String(soundEnabled));
-  soundButton.setAttribute("aria-label", soundEnabled ? "音を消す" : "音を出す");
-  soundButton.title = soundEnabled ? "音を消す" : "音を出す";
-  soundButton.querySelector("span").textContent = soundEnabled ? "♪" : "×";
-  if (soundEnabled) playNotes([[660, 0, 0.12]], "triangle");
+document.querySelectorAll(".seed-option").forEach((item) => item.addEventListener("click", () => {
+  state.flower = item.dataset.flower;
+  setSelected(".seed-option", item);
+}));
+document.querySelectorAll(".level-option").forEach((item) => item.addEventListener("click", () => {
+  state.level = item.dataset.level;
+  setSelected(".level-option", item);
+}));
+$("#startButton").addEventListener("click", begin);
+$("#againButton").addEventListener("click", begin);
+$("#changeButton").addEventListener("click", () => show("#startScreen"));
+$("#hintButton").addEventListener("click", showHint);
+$("#soundButton").addEventListener("click", () => {
+  state.sound = !state.sound;
+  $("#soundButton").setAttribute("aria-pressed", String(state.sound));
+  $("#soundButton").setAttribute("aria-label", state.sound ? "おとを けす" : "おとを だす");
+  $("#soundLabel").textContent = state.sound ? "おと ON" : "おと OFF";
+  if (state.sound) playChime(660);
 });
-
-modeButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    if (button.dataset.mode === mode) return;
-    mode = button.dataset.mode;
-    modeButtons.forEach((item) => {
-      item.classList.toggle("is-active", item === button);
-      item.setAttribute("aria-pressed", String(item === button));
-    });
-    resetGame();
-  });
-});
-
-document.addEventListener("keydown", (event) => {
-  if (event.repeat || !resultScreen.hidden || event.target.closest("button")) return;
-  if (!answered && ["1", "2", "3"].includes(event.key)) {
-    answers.querySelectorAll("button")[Number(event.key) - 1]?.click();
-  } else if (answered && (event.key === "Enter" || event.key === " ")) {
-    event.preventDefault();
-    nextQuestion();
-  }
-});
-
-renderQuestion();
