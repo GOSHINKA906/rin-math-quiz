@@ -22,6 +22,7 @@ button:focus-visible, a:focus-visible { outline: 4px solid #855ab6; outline-offs
 .brand small, .brand strong { display: block; }
 .brand small { font-size: 10px; letter-spacing: 2px; color: #9b8073; }
 .brand strong { font-size: 19px; letter-spacing: 1px; }
+.audio-controls { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 6px; }
 .sound-toggle { min-height: 42px; border: 2px solid #e8d9c7; border-radius: 999px; color: #7e6b60; background: #fffefa; padding: 6px 17px; font-size: 12px; font-weight: 900; }
 .sound-toggle span:first-child { font-size: 18px; margin-right: 4px; }
 .sound-toggle[aria-pressed="true"] { color: #aa486d; border-color: #e8aabd; background: #fff0f4; }
@@ -74,6 +75,11 @@ footer { margin: 36px auto 24px; padding: 0 18px; text-align: center; color: #9e
 .start-button { grid-column: 1 / -1; width: min(370px, 100%); margin: 3px auto 0; }
 
 .game-topline { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px 12px; font-weight: 900; font-size: 13px; }
+.journey-progress { margin: 0 0 14px; padding: 13px 18px 15px; border: 2px solid #e7d8c7; border-radius: 19px; background: #fffefa; box-shadow: 0 4px 0 #eddfcf; }
+.journey-caption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; margin-bottom: 9px; color: #6e5147; font-size: 13px; font-weight: 800; }
+.journey-caption strong { color: #9d3d63; }
+.journey-track { height: 12px; overflow: hidden; border-radius: 999px; background: #f3dfd9; }
+.journey-track span { display: block; width: 0; height: 100%; border-radius: inherit; background: #b94872; transition: width .35s ease; }
 .chapter-label { color: #ab5b78; } .step-label { border-radius: 999px; padding: 7px 15px; background: #fffefa; border: 1px solid #eddcc9; }
 .garden-scene { position: relative; overflow: hidden; min-height: 240px; padding: 20px 30px 0; border: 2px solid #d3ddcc; border-radius: 28px; background: linear-gradient(180deg, #def1f1, #f4f9e6 58%, #bbdca5 59%, #aed398); }
 #gameScreen[data-chapter="1"] .garden-scene { background: linear-gradient(180deg, #f0e9f5, #f7f8e9 58%, #b4d7a4 59%, #a9ce94); }
@@ -130,7 +136,8 @@ footer { margin: 36px auto 24px; padding: 0 18px; text-align: center; color: #9e
 .hop-button:hover:not(:disabled) { transform: translateY(-3px); }
 .hop-button:disabled { opacity: .6; }
 .hop-counter { color: #90776a; font-size: 12px; margin: 8px 0; }
-.hint-button { display: block; margin: 16px auto 0; border: 0; background: none; color: #a95872; font-size: 12px; font-weight: 900; text-decoration: underline; text-underline-offset: 4px; }
+.hint-button { display: block; min-height: 44px; margin: 12px auto 0; padding: 9px 18px; border: 2px solid #d9b38b; border-radius: 14px; background: #fff8e8; color: #784525; font-size: 14px; font-weight: 900; }
+.hint-button:hover { background: #fff0d4; }
 .hint-panel { margin: 12px auto 0; max-width: 520px; padding: 14px; border: 2px dashed #e5c07e; border-radius: 14px; background: #fff8e8; color: #795d3d; font-size: 12px; text-align: center; line-height: 1.8; }
 .feedback { text-align: center; min-height: 0; margin-top: 10px; font-size: 12px; font-weight: 900; }
 .feedback.is-gentle { padding: 10px; color: #976340; background: #fff5e6; border-radius: 12px; }
@@ -170,18 +177,21 @@ footer { margin: 36px auto 24px; padding: 0 18px; text-align: center; color: #9e
   .brand small { font-size: 8px; letter-spacing: 0; }
   .brand strong { font-size: 14px; }
   .sound-toggle { min-height: 35px; padding: 4px 9px; font-size: 10px; }
+  .sound-toggle { min-height: 44px; min-width: 70px; }
+  .audio-controls { gap: 4px; }
+  .audio-controls .sound-toggle { min-width: 0; padding-inline: 8px; }
   .sound-toggle span:first-child { font-size: 14px; margin-right: 0; }
   main { width: calc(100% - 20px); }
   .start-screen { border-radius: 24px; }
-  .intro-layout { display: block; padding: 35px 22px 0; min-height: 575px; }
+  .intro-layout { display: block; padding: 30px 22px 0; min-height: 475px; }
   .intro-copy { position: relative; z-index: 3; text-align: center; }
   .eyebrow { font-size: 9px; }
   .intro-copy h1 { font-size: clamp(37px, 10vw, 47px); margin: 13px 0; }
   .intro-lead { font-size: 11px; line-height: 1.9; }
   .intro-pills { justify-content: center; gap: 5px; margin-top: 15px; }
   .intro-pills span { padding: 6px; font-size: 9px; }
-  .intro-art { position: absolute; top: 278px; left: 0; width: 100%; height: 300px; min-height: 0; }
-  .hero-bunny { width: 210px; right: calc(50% - 105px); bottom: -4px; }
+  .intro-art { position: absolute; top: 250px; left: 0; width: 100%; height: 225px; min-height: 0; }
+  .hero-bunny { width: 172px; right: calc(50% - 86px); bottom: -4px; }
   .intro-hill { bottom: -30px; left: -15%; width: 130%; height: 90px; }
   .sun { top: 12px; right: 18%; width: 45px; height: 45px; }
   .butterfly { top: 10%; right: 12%; font-size: 26px; }
@@ -217,7 +227,9 @@ footer { margin: 36px auto 24px; padding: 0 18px; text-align: center; color: #9e
   .mission-tag { font-size: 9px; padding: 6px 9px; }
   #questionBadge { font-size: 10px; }
   .challenge-card h2 { font-size: 18px; margin-top: 15px; }
-  .mission-text { font-size: 11px; }
+  .mission-text { font-size: 15px; color: #6f5549; }
+  .journey-progress { margin-bottom: 12px; padding: 11px 13px 13px; }
+  .journey-caption { font-size: 12px; }
   .equation { font-size: clamp(30px, 9vw, 42px); padding: 4px 14px; margin: 12px auto; white-space: nowrap; }
   .count-pot { width: 39px; min-height: 48px; padding: 4px 1px; border-width: 1px; border-radius: 8px 8px 13px 13px; }
   .count-dots { width: 30px; }

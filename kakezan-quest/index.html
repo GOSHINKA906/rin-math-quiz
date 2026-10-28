@@ -7,8 +7,8 @@
   <meta name="description" content="うさぎのももと九九のお庭を育てよう。小学2年生向けのかけ算あそび。">
   <title>りんの九九ガーデン</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23fff3da'/%3E%3Ctext x='10' y='48' font-size='44'%3E🌼%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=20260924-adventure">
-  <script src="script.js?v=20260924-adventure" defer></script>
+  <link rel="stylesheet" href="style.css?v=20261027-music">
+  <script src="script.js?v=20261027-music" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -16,7 +16,10 @@
       <span class="brand-flower" aria-hidden="true">✿</span>
       <span><small>ももと いっしょに あそぼう</small><strong>りんの九九ガーデン</strong></span>
     </a>
-    <button id="soundButton" class="sound-toggle" type="button" aria-pressed="false" aria-label="おとを だす"><span aria-hidden="true">♪</span><span id="soundLabel">おと OFF</span></button>
+    <div class="audio-controls" role="group" aria-label="おと の せってい">
+      <button id="musicButton" class="sound-toggle" type="button" aria-pressed="false" aria-label="おんがくを ならす"><span aria-hidden="true">♫</span><span id="musicLabel">おんがく OFF</span></button>
+      <button id="soundButton" class="sound-toggle" type="button" aria-pressed="false" aria-label="こうかおんを だす"><span aria-hidden="true">♪</span><span id="soundLabel">こうかおん OFF</span></button>
+    </div>
   </header>
 
   <main>
@@ -53,6 +56,10 @@
 
     <section id="gameScreen" class="game-screen screen" aria-labelledby="gameTitle" hidden>
       <div class="game-topline"><span id="chapterLabel" class="chapter-label">はじまりの おにわ</span><span id="stepLabel" class="step-label">1 / 10</span></div>
+      <div class="journey-progress" aria-label="おにわの すすみぐあい">
+        <div class="journey-caption"><span>おはなを そだてよう</span><strong id="progressText">0 / 10 こ さいたよ</strong></div>
+        <div id="progressMeter" class="journey-track" role="progressbar" aria-label="さいた おはな" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0"><span id="progressFill"></span></div>
+      </div>
       <div class="garden-scene">
         <div class="garden-sun" aria-hidden="true"></div>
         <div class="garden-heading"><div><span class="garden-kicker">MOMO'S LITTLE GARDEN</span><h1 id="gameTitle">ももの おにわ</h1></div><span id="flowerCount" class="flower-count">🌼 0 / 10</span></div>
@@ -63,13 +70,13 @@
         <div class="momo-card"><img src="bunny.svg" alt="うさぎの もも" width="96" height="100"><p id="momoLine">いっしょに そだてよう！</p></div>
         <div class="challenge-card">
           <div class="challenge-header"><span id="missionTag" class="mission-tag">こたえを えらぼう</span><span id="questionBadge">だい 1 もん</span></div>
-          <h2 id="missionTitle">おはなの かずは？</h2>
+          <h2 id="missionTitle" tabindex="-1">おはなの かずは？</h2>
           <p id="missionText" class="mission-text"></p>
           <div id="equation" class="equation" aria-live="polite"></div>
           <div id="groupVisual" class="group-visual" aria-label="かずの まとまり"></div>
           <p id="groupCaption" class="group-caption"></p>
           <div id="playControls" class="play-controls"></div>
-          <button id="hintButton" class="hint-button" type="button" aria-expanded="false">💡 ヒントを みる</button>
+          <button id="hintButton" class="hint-button" type="button" aria-expanded="false" aria-controls="hintPanel">ヒントを みる</button>
           <div id="hintPanel" class="hint-panel" hidden></div>
           <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
         </div>

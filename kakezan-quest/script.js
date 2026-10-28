@@ -11,6 +11,7 @@ const state = {
   flower: "daisy", level: "easy", index: 0, planted: 0,
   firstTry: 0, mistakes: 0, hop: 0, question: null,
   used: new Set(), sound: false, audio: null, locked: false,
+  music: false, musicTimer: null, musicGain: null, musicStep: 0, musicNext: 0,
 };
 
 function randomFrom(items) { return items[Math.floor(Math.random() * items.length)]; }
@@ -60,6 +61,11 @@ function renderGarden(target, count) {
     plot.innerHTML = flowerMarkup(i < count) + `<span class="plot-soil" aria-hidden="true"></span>`;
     target.append(plot);
   }
+}
+function updateProgress() {
+  $("#progressText").textContent = `${state.planted} / ${TOTAL} こ さいたよ`;
+  $("#progressMeter").setAttribute("aria-valuenow", String(state.planted));
+  $("#progressFill").style.width = `${state.planted / TOTAL * 100}%`;
 }
 function renderGroups(revealed = true) {
   const q = state.question;
@@ -137,12 +143,13 @@ function renderMission() {
   $("#stepLabel").textContent = `${state.index + 1} / ${TOTAL}`;
   $("#questionBadge").textContent = `だい ${state.index + 1} もん`;
   $("#flowerCount").textContent = `🌼 ${state.planted} / ${TOTAL}`;
+  updateProgress();
   $("#gameScreen").dataset.chapter = String(Math.floor(state.index / 3));
   $("#feedback").textContent = "";
   $("#feedback").className = "feedback";
   $("#hintButton").hidden = kind === "hop";
   $("#hintButton").setAttribute("aria-expanded", "false");
-  $("#hintButton").textContent = "💡 ヒントを みる";
+  $("#hintButton").textContent = "ヒントを みる";
   $("#hintPanel").hidden = true;
   $("#hintPanel").textContent = "";
   $("#playControls").innerHTML = "";
@@ -193,6 +200,7 @@ function completeMission() {
   state.planted++;
   const q = state.question;
   $("#flowerCount").textContent = `🌼 ${state.planted} / ${TOTAL}`;
+  updateProgress();
   renderGarden($("#gardenPlots"), state.planted);
   $("#feedback").className = "feedback is-success";
   $("#feedback").innerHTML = `<strong>おはなが さいたよ！ ✿</strong><span>${q.first} × ${q.second} = ${q.answer}</span>`;
@@ -202,11 +210,12 @@ function completeMission() {
   controls.className = "play-controls next-controls";
   const next = button(state.index === TOTAL - 1 ? "かんせいした おにわを みる →" : "つぎの おはなへ →", "primary-button next-button", () => {
     state.index++;
-    if (state.index === TOTAL) finish(); else { renderMission(); $("#gameScreen").scrollIntoView({ behavior: "smooth" }); }
+    if (state.index === TOTAL) finish(); else { renderMission(); $("#missionTitle").focus(); }
   });
   controls.append(next);
   $("#hintButton").hidden = true;
   $("#hintPanel").hidden = true;
+  next.focus({ preventScroll: true });
   playSuccess();
 }
 function showHint() {
@@ -215,7 +224,7 @@ function showHint() {
   const opening = panel.hidden;
   panel.hidden = !opening;
   $("#hintButton").setAttribute("aria-expanded", String(opening));
-  $("#hintButton").textContent = opening ? "💡 ヒントを とじる" : "💡 ヒントを みる";
+  $("#hintButton").textContent = opening ? "ヒントを とじる" : "ヒントを みる";
   if (!opening) return;
   const steps = Array.from({ length: q.second }, (_, i) => `${q.first * (i + 1)}`).join(" → ");
   panel.textContent = q.kind === "missing" ? `${q.first}ずつ かぞえるよ。${steps}。おはなばちは いくつ？` : `${q.first}ずつ かぞえるよ。${steps}。さいごの かずは？`;
@@ -233,6 +242,7 @@ function begin() {
   state.used.clear();
   show("#gameScreen");
   renderMission();
+  $("#missionTitle").focus({ preventScroll: true });
 }
 function setSelected(selector, chosen) {
   document.querySelectorAll(selector).forEach((item) => {
@@ -241,13 +251,70 @@ function setSelected(selector, chosen) {
     item.setAttribute("aria-pressed", String(selected));
   });
 }
-function audioContext() {
-  if (!state.sound) return null;
+function getAudioContext() {
   const Audio = window.AudioContext || window.webkitAudioContext;
   if (!Audio) return null;
   if (!state.audio) state.audio = new Audio();
   if (state.audio.state === "suspended") state.audio.resume();
   return state.audio;
+}
+function audioContext() {
+  return state.sound ? getAudioContext() : null;
+}
+// A gentle original music-box melody, generated locally with no audio download.
+const gardenMelody = [
+  76, 79, 81, 79, 76, 74, 72, null, 74, 76, 79, 76, 74, 72, 69, null,
+  72, 76, 79, 81, 79, 76, 74, null, 77, 76, 74, 72, 74, 71, 72, null,
+];
+const gardenBass = [48, 48, 53, 53, 45, 45, 43, 43];
+function musicNote(audio, midi, at, duration, volume, type) {
+  const osc = audio.createOscillator();
+  const gain = audio.createGain();
+  osc.type = type;
+  osc.frequency.value = 440 * Math.pow(2, (midi - 69) / 12);
+  gain.gain.setValueAtTime(0.0001, at);
+  gain.gain.exponentialRampToValueAtTime(volume, at + 0.025);
+  gain.gain.exponentialRampToValueAtTime(0.0001, at + duration);
+  osc.connect(gain).connect(state.musicGain);
+  osc.start(at);
+  osc.stop(at + duration + 0.02);
+}
+function scheduleMusic() {
+  const audio = state.audio;
+  if (!state.music || !audio || document.hidden) return;
+  if (state.musicNext < audio.currentTime) state.musicNext = audio.currentTime + 0.04;
+  while (state.musicNext < audio.currentTime + 0.3) {
+    const step = state.musicStep % gardenMelody.length;
+    const note = gardenMelody[step];
+    if (note !== null) musicNote(audio, note, state.musicNext, 0.44, 0.11, 'sine');
+    if (step % 4 === 0) musicNote(audio, gardenBass[step / 4], state.musicNext, 0.95, 0.045, 'triangle');
+    state.musicNext += 0.38;
+    state.musicStep++;
+  }
+}
+function startMusic() {
+  const audio = getAudioContext();
+  if (!audio) return false;
+  state.music = true;
+  state.musicStep = 0;
+  state.musicNext = audio.currentTime + 0.05;
+  state.musicGain = audio.createGain();
+  state.musicGain.gain.value = 0.42;
+  state.musicGain.connect(audio.destination);
+  scheduleMusic();
+  state.musicTimer = window.setInterval(scheduleMusic, 120);
+  return true;
+}
+function stopMusic() {
+  state.music = false;
+  window.clearInterval(state.musicTimer);
+  state.musicTimer = null;
+  if (state.musicGain && state.audio) {
+    const gain = state.musicGain;
+    gain.gain.setTargetAtTime(0, state.audio.currentTime, 0.025);
+    window.setTimeout(() => gain.disconnect(), 600);
+    state.musicGain = null;
+  }
 }
 function playChime(frequency) {
   const audio = audioContext();
@@ -279,10 +346,22 @@ $("#startButton").addEventListener("click", begin);
 $("#againButton").addEventListener("click", begin);
 $("#changeButton").addEventListener("click", () => show("#startScreen"));
 $("#hintButton").addEventListener("click", showHint);
+$("#musicButton").addEventListener("click", () => {
+  if (state.music) stopMusic(); else startMusic();
+  $("#musicButton").setAttribute("aria-pressed", String(state.music));
+  $("#musicButton").setAttribute("aria-label", state.music ? "おんがくを とめる" : "おんがくを ならす");
+  $("#musicLabel").textContent = state.music ? "おんがく ON" : "おんがく OFF";
+});
+document.addEventListener("visibilitychange", () => {
+  if (state.music && !document.hidden) {
+    state.musicNext = state.audio.currentTime + 0.05;
+    scheduleMusic();
+  }
+});
 $("#soundButton").addEventListener("click", () => {
   state.sound = !state.sound;
   $("#soundButton").setAttribute("aria-pressed", String(state.sound));
-  $("#soundButton").setAttribute("aria-label", state.sound ? "おとを けす" : "おとを だす");
-  $("#soundLabel").textContent = state.sound ? "おと ON" : "おと OFF";
+  $("#soundButton").setAttribute("aria-label", state.sound ? "こうかおんを けす" : "こうかおんを だす");
+  $("#soundLabel").textContent = state.sound ? "こうかおん ON" : "こうかおん OFF";
   if (state.sound) playChime(660);
 });
